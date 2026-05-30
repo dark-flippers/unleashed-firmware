@@ -1,0 +1,6 @@
+.gauntlet/
+__pycache__/
+node_modules/
+campaigns/
+*.log
+.DS_Store

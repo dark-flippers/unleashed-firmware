@@ -1,0 +1,16 @@
+{
+  "name": "gauntlet",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Endless Pok\u00e9mon draft battler played inside a Claude Code session. Zero dependencies.",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "python3 test/drive.py 1"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1"
+  }
+}

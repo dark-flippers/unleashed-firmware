@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GAUNTLET — journey (test build)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=JetBrains+Mono:wght@400;500;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#0C1014; --panel:#131920; --panel-2:#182027; --line:#232E38; --line-2:#2E3A46;
+  --text:#E9EEF3; --dim:#7C8893; --faint:#4C5660;
+  --accent:#A8A77A; --accent-soft:rgba(168,167,122,.13);
+  --danger:#E5484D; --ok:#46A758; --warn:#D8A03D;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:"JetBrains Mono",monospace;font-size:13.5px;line-height:1.55;overflow:hidden}
+.silk{font-family:"Silkscreen",monospace;text-transform:uppercase}
+.tale-voice{font-family:"Crimson Pro",serif;font-size:17px;line-height:1.6}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button[disabled]{opacity:.35;pointer-events:none}
+img.px{image-rendering:pixelated}
+input[type=text],input[type=password]{
+  background:var(--panel-2);border:1px solid var(--line);color:var(--text);
+  font-family:"JetBrains Mono",monospace;font-size:13px;padding:9px 12px;width:100%;
+}
+::selection{background:var(--accent);color:#0C1014}
+.eyebrow{font-size:10px;letter-spacing:.22em;color:var(--dim);text-transform:uppercase}
+.tag{display:inline-block;font-size:9px;letter-spacing:.13em;padding:1px 7px;border:1px solid currentColor;text-transform:uppercase;line-height:1.7}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.shake{animation:shake .42s ease}
+@keyframes faintdrop{to{opacity:0;transform:translateY(26px)}}
+.faintdrop{animation:faintdrop .5s ease forwards}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.fadein{animation:fadein .3s ease both}
+@keyframes stampin{0%{opacity:0;transform:translate(-50%,-50%) scale(1.5) rotate(-4deg)}60%{opacity:1;transform:translate(-50%,-50%) scale(.97) rotate(-4deg)}100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-4deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.thinking{animation:pulse 1.2s ease infinite}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important}}
+
+/* ---- app frame ---- */
+#app{height:100dvh;display:grid;grid-template-rows:auto 1fr auto;max-width:1280px;margin:0 auto;padding:0 18px}
+header{display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);padding:12px 2px}
+header .logo{font-size:15px;font-weight:700;letter-spacing:.13em;color:var(--accent)}
+header .crumb{color:var(--faint);font-size:10px;letter-spacing:.1em}
+#card-strip{margin-left:auto;display:flex;gap:16px;font-size:11px;color:var(--dim);letter-spacing:.04em;flex-wrap:wrap}
+#card-strip b{color:var(--text);font-weight:500}
+#main{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;min-height:0;padding:14px 0}
+.pane{background:var(--panel);border:1px solid var(--line);min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.pane-h{display:flex;align-items:baseline;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line);flex:none}
+.pane-h .t{font-size:10px;letter-spacing:.2em;color:var(--dim)}
+.pane-h .r{margin-left:auto;font-size:10px;color:var(--faint)}
+
+/* ---- stage ---- */
+#stage{flex:1;position:relative;overflow:auto;background:radial-gradient(700px 300px at 72% 14%,var(--accent-soft),transparent 70%)}
+.stage-inner{position:relative;min-height:100%;padding:18px}
+.combatant{display:flex;flex-direction:column;gap:8px}
+.combatant.enemy{align-items:flex-end;margin-left:auto;width:fit-content}
+.combatant.player{align-items:flex-start;width:fit-content;margin-top:-26px}
+.plate{background:rgba(12,16,20,.88);border:1px solid var(--line-2);padding:9px 12px;min-width:240px}
+.plate .nm{display:flex;align-items:baseline;gap:8px}
+.plate .nm b{font-size:12px;letter-spacing:.09em}
+.plate .nm .lv{color:var(--dim);font-size:10px;margin-left:auto}
+.hpbar{height:8px;background:#0a0d11;border:1px solid var(--line-2);position:relative;overflow:hidden;flex:1}
+.hpbar i{position:absolute;inset:0;transform-origin:left;background:var(--ok);transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+.hpbar.low i{background:var(--warn)} .hpbar.crit i{background:var(--danger)}
+.hp-row{display:flex;align-items:center;gap:8px;margin-top:7px}
+.hp-num{font-size:10px;color:var(--dim);min-width:70px;text-align:right}
+.sprite{position:relative;width:fit-content}
+.sprite img{width:200px;height:200px;object-fit:contain;filter:drop-shadow(0 16px 18px rgba(0,0,0,.55))}
+.combatant.player .sprite img{width:230px;height:230px}
+.sprite::after{content:"";position:absolute;left:50%;bottom:8px;transform:translateX(-50%);width:72%;height:16px;border-radius:50%;background:rgba(0,0,0,.45);filter:blur(4px);z-index:-1}
+.battle-flag{position:absolute;top:12px;left:16px;font-size:10px;letter-spacing:.22em;color:var(--dim)}
+.battle-flag b{color:var(--text)}
+.stamp{position:absolute;left:50%;top:44%;font-size:19px;letter-spacing:.16em;padding:7px 16px;border:2px solid currentColor;background:rgba(12,16,20,.9);animation:stampin .4s ease both;pointer-events:none;white-space:nowrap;z-index:5}
+.stamp.super{color:var(--warn)} .stamp.weak{color:var(--dim)} .stamp.crit{color:var(--danger)} .stamp.immune{color:var(--faint)}
+
+/* trainer card / pick views inside stage */
+.tc{padding:24px}
+.tc h2{font-size:18px;letter-spacing:.08em;margin-bottom:4px}
+.tc .sub{color:var(--dim);font-size:12px;margin-bottom:18px}
+.tc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.mon-card{background:var(--panel-2);border:1px solid var(--line);padding:12px;display:flex;flex-direction:column;gap:7px;text-align:left;transition:border-color .15s ease,transform .07s ease}
+.mon-card:hover{border-color:var(--accent)}
+.mon-card:active{transform:translateY(1px)}
+.mon-card img{width:84px;height:84px;align-self:center}
+.mon-card .nm{font-size:11px;letter-spacing:.08em;font-weight:700}
+.mon-card .meta{font-size:10px;color:var(--dim)}
+.mon-card .types{display:flex;gap:5px}
+.mon-card .mini-hp{display:flex;align-items:center;gap:6px}
+.mon-card .mini-hp .hp-num{min-width:0}
+.world-block{margin-top:18px;border:1px solid var(--warn);background:rgba(216,160,61,.07);padding:12px 14px}
+.world-block .wt{color:var(--warn);font-size:10px;letter-spacing:.2em;margin-bottom:6px}
+.world-block p{font-size:12px;color:var(--text);margin:3px 0}
+.world-block p b{color:var(--warn)}
+
+/* ---- tale ---- */
+#tale{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+.gm-msg{color:var(--text)}
+.gm-msg .who{font-size:9px;letter-spacing:.24em;color:var(--accent);font-family:"Silkscreen",monospace;text-transform:uppercase;display:block;margin-bottom:4px}
+.engine-msg{font-size:11.5px;color:var(--dim);border-left:2px solid var(--line);padding-left:10px}
+.engine-msg.hot{color:var(--text);border-left-color:var(--accent)}
+.player-msg{color:var(--dim);font-size:12.5px;text-align:right}
+.player-msg em{color:var(--text);font-style:normal}
+.conseq-msg{border:1px solid var(--warn);padding:9px 12px;font-size:12px;color:var(--warn)}
+
+/* ---- action bar ---- */
+#actions{border-top:1px solid var(--line);padding:12px 0 16px;display:flex;flex-direction:column;gap:10px}
+#btn-row{display:flex;gap:8px;flex-wrap:wrap;min-height:38px}
+.act{background:var(--panel);border:1px solid var(--line);padding:8px 14px;font-size:11.5px;letter-spacing:.04em;transition:border-color .12s,background .12s,transform .06s}
+.act:hover{border-color:var(--line-2);background:var(--panel-2)}
+.act:active{transform:translateY(1px)}
+.act.move{border-left:3px solid var(--mv,#888);text-align:left;min-width:150px}
+.act.move .mn{font-weight:700;display:block;font-size:11px}
+.act.move .mi{font-size:10px;color:var(--dim);display:flex;gap:10px;margin-top:2px}
+.act.primary{background:var(--accent);color:#0C1014;border-color:var(--accent);font-weight:700;letter-spacing:.1em}
+.act.primary:hover{filter:brightness(1.1)}
+.act.ghost{color:var(--dim)}
+.act.suggest{border-style:dashed;color:var(--dim);font-family:"Crimson Pro",serif;font-size:14px;letter-spacing:0}
+.act.suggest:hover{color:var(--text)}
+#say-row{display:flex;gap:8px}
+#say{flex:1}
+#setup{position:fixed;inset:0;background:var(--bg);z-index:40;display:flex;align-items:center;justify-content:center;padding:20px}
+.setup-box{max-width:520px;width:100%}
+.setup-box h1{font-size:clamp(30px,5vw,44px);letter-spacing:.02em;line-height:1}
+.setup-box h1 span{color:var(--accent)}
+.setup-box .lede{color:var(--dim);margin:14px 0 26px;font-size:13px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:10px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase;margin-bottom:6px}
+.field .note{font-size:10.5px;color:var(--faint);margin-top:5px}
+.check{display:flex;gap:8px;align-items:center;font-size:11px;color:var(--dim);margin:4px 0 18px}
+#err{color:var(--danger);font-size:12px;margin-top:12px;min-height:16px}
+@media (max-width: 920px){
+  #main{grid-template-columns:1fr;grid-template-rows:minmax(300px,1.1fr) minmax(180px,1fr)}
+  .sprite img{width:130px;height:130px}
+  .combatant.player .sprite img{width:150px;height:150px}
+  .plate{min-width:185px}
+  body{overflow:auto}
+  #app{height:auto;min-height:100dvh}
+}
+.tool-msg{font-size:10.5px;color:var(--faint);font-family:"JetBrains Mono",monospace}
+.tool-msg::before{content:"⚙ "}
+.tool-msg{font-size:10.5px;color:var(--faint)}
+.loc-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+</style>
+</head>
+<body>
+<div id="setup">
+  <div class="setup-box">
+    <h1 class="silk">THE TALL<br>GRASS <span>TALKS</span></h1>
+    <p class="lede">A Pokémon journey with an AI Game Master — test build, the Kanto opening slice (Pallet Town to Mt. Moon, 16 species). The engine runs every battle, catch, and coin; Claude narrates the world around it. Your journey saves automatically.</p>
+    <div class="field">
+      <label for="tn">Trainer name</label>
+      <input type="text" id="tn" placeholder="Red" maxlength="20" autocomplete="off" />
+    </div>
+    <button class="act primary silk" id="begin">NEW JOURNEY</button>
+    <button class="act ghost" id="resume" style="display:none">RESUME JOURNEY</button>
+    <p id="err"></p>
+  </div>
+</div>
+
+<div id="app" style="visibility:hidden">
+  <header>
+    <span class="silk logo">GAUNTLET</span>
+    <span class="crumb silk">journey · test build</span>
+    <div id="card-strip"></div>
+  </header>
+  <div id="main">
+    <div class="pane">
+      <div class="pane-h"><span class="t silk">STAGE</span><span class="r" id="stage-flag"></span></div>
+      <div id="stage"><div class="stage-inner" id="stage-inner"></div></div>
+    </div>
+    <div class="pane">
+      <div class="pane-h"><span class="t silk">THE TALE</span><span class="r" id="gm-status"></span></div>
+      <div id="tale"></div>
+    </div>
+  </div>
+  <div id="actions">
+    <div id="btn-row"></div>
+    <div id="say-row">
+      <input type="text" id="say" placeholder="Say or do anything — the GM is listening…" autocomplete="off" />
+      <button class="act" id="say-btn">SEND</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const PACK = {"dex": {"bulbasaur": {"id": 1, "types": ["grass", "poison"], "base": {"hp": 45, "atk": 49, "def": 49, "spa": 65, "spd": 65, "spe": 45}, "moves": [{"name": "sludge-bomb", "power": 90, "accuracy": 100, "type": "poison", "cls": "special"}, {"name": "giga-drain", "power": 75, "accuracy": 100, "type": "grass", "cls": "special"}, {"name": "sludge", "power": 65, "accuracy": 100, "type": "poison", "cls": "special"}, {"name": "razor-leaf", "power": 55, "accuracy": 95, "type": "grass", "cls": "physical"}], "captureRate": 45, "baseExp": 64, "sprite": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAMFBMVEUAAAAQEBAYSkoxc3M5lJRSYili1bRzrDGD7sWk1UGsADG9/3PNzc3uIDn/amL///87EAzGAAAAAXRSTlMAQObYZgAAAZ1JREFUWMPtlL9Lw0AUx9NUce1JwMGlLUfbrdAGcVAkl0fI5iSloxiOrg4hiJuWcP+AlPwLASm4lWzB0dG9/0HAunbwpbjfq6PcZ/5+8n5weZZlMBgMhv/F4b75KaOHj5L4ZppMWuT8Y1Gssge6gPmiSLKYINjtukBRvJ0kK5IQPrXHyGhwWxTZyz1BUGOlUjlQOyHRlwhDpSCUKq2FBWFqX6k5hKmU0Wkt6Hs6xwKgdsIqW8Q0IVQpoJBlSawdojmYKRz6+aMHXrYgCPZnqubh7HJZgtdPiALUwmYnTLTCxTpUoObrfAtCUISrZYAzRMtqCz7040S7pbM8kLjSvHoHANHXCx35C/Da0D8NfiyDO8yPGLjQhY7+dV/nUt512DdgiS4X+tfK/bzGBYEdcWhrhYbjv1aVC54D2BRBQAOnBeaAK7CKR/hHPYagwz0cgiAcyAg3KiQIhyZYrsQoD6I9BPAYh1oQQDlMgYw8K0Ch4bouRWhGtSCjll2WJeXqDYe8ZfUC7IYx0qlsMGbZm83Xfqee+HGDwWAwGP7KD5Vqm0oTWykbAAAAAElFTkSuQmCC"}, "charmander": {"id": 4, "types": ["fire"], "base": {"hp": 39, "atk": 52, "def": 43, "spa": 60, "spd": 50, "spe": 65}, "moves": [{"name": "flamethrower", "power": 90, "accuracy": 100, "type": "fire", "cls": "special"}, {"name": "fire-punch", "power": 75, "accuracy": 100, "type": "fire", "cls": "physical"}, {"name": "ember", "power": 40, "accuracy": 100, "type": "fire", "cls": "special"}, {"name": "fire-spin", "power": 35, "accuracy": 85, "type": "fire", "cls": "special"}], "captureRate": 45, "baseExp": 62, "sprite": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAALVBMVEUAAAAIOYsQEBAYi7QxrO6LKQDeUjnmOQDmrFr2pAD/lEH/xWL/1Qj/1Xv///8NIPGPAAAAAXRSTlMAQObYZgAAAchJREFUWMPtlb9Lw0AUx49A7FwQB6dyYggdOol/h8ulpaDDQY4QF7dQ6FSwHILgFgouFsxwgoOj/gFFyCwi3CJ08a/wXX6s3ouTyH2HJMP75N67+753hDg5OTk5/UntxKxbfKpUJ+JcgQYdFnh5/g2wxgPpg1JFJwD+n6oCn9OeAfoCDxwDcNeP8MAXAI8HHYChAXZb4MIa7+8DcH/U1jC3A9UxiC6A2dS4AXq39hqmsEAccfgCB/bKGytAwasjwQlj3KywsWV0QijNIhEzpQywebUAXsyCmIkADFJAHVlWWjbWSxUfFlQI2ChKSJbP85+BACI5xINM3fNNaSnCC0QjbjZ2VtoAQ8SJFIJVBzFblTmxErGUy7TuoF6+yqwH4UVav7ctl43t9iMTrXXbcv4YYfBTAzRzw39CA3VOPmIa+NcAXDXAFANAvP6oAWYMZRMzwJspwmeYceMXJqUlmJVBayQIQCVaS3DrGhyYLDBTYyKlAQqwlRxggHUNiEDIBWouFaGUEfRPKBeYceZBQ4QyAoOHlyeo0Qepc3oID4aLB8D0TiQ4crZ6dXNOFRYYnVVTL0LfKR6l1Wu7/ex2vVM6IE5OTk7/Ud/V9spBc5Q2fAAAAABJRU5ErkJggg=="}, "squirtle": {"id": 7, "types": ["water"], "base": {"hp": 44, "atk": 48, "def": 65, "spa": 50, "spd": 64, "spe": 43}, "moves": [{"name": "surf", "power": 90, "accuracy": 100, "type": "water", "cls": "special"}, {"name": "waterfall", "power": 80, "accuracy": 100, "type": "water", "cls": "physical"}, {"name": "bubble-beam", "power": 65, "accuracy": 100, "type": "water", "cls": "special"}, {"name": "water-gun", "power": 40, "accuracy": 100, "type": "water", "cls": "special"}], "captureRate": 45, "baseExp": 63, "sprite": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAMFBMVEUAAAAQEBApc4NanKRiKQCDKQCLxc205u69agDNeynVlFLVzc3mrFr/1Wr/5pz///8R5ETqAAAAAXRSTlMAQObYZgAAAb1JREFUWMPtlL9KxEAQxi/JC2QvnihaeAkXCwtNBheus7eUPIBZXLGy82ohnZVi4cIl76A2h1ZqJaz2Bxd7C1PoCzgr9jcpBIv9uoX5sfPnm+l0rKysrKz+pwDCdvGjkWxDeBgv5RodWB+dIJCT491D80GLL1wMFm2ACIM5cJlSgYH5YeVWJFRgk0u5z26ADAwM0PukA31M6bgF4JqmHvS+yIBzwjEnAfSUumZqEIHvhZRRbG05iyIMB3uwxkmdjVOW9JTKIOEy8glOxWyC7SyDtCtzCmCMtB9hxcu3kjZrdJJIGVvVsaT1yQWAcV3rRy7AJ3U1hGFZT9UFprWDL8KqsuG7GtfTCJaKTigFYRbVx2vzMX1gk8LFmRPWomoQ0Hp3UkS03f4BSgROgeexmF+6equaaa3PJgsAcU4AqmelVT27uisg5ZLQ3Kqpmlk5u7w/hYTicq80NTw/pRtEgB/VL9glvDPXAMH8jDx5pJXWT+gpY0JGMTjWrB8RCCjxxuDbWqsLBPqMYj8HbZppfc4l9QwEmHnGWES+GxjJfjnaIRNxYlJ3cJNoG8ScnzhHLPb9Thv9glZWVlZWf69vfHii3k2wjfUAAAAASUVORK5CYII="}, "pidgey": {"id": 16, "types": ["normal", "flying"], "base": {"hp": 40, "atk": 45, "def": 40, "spa": 35, "spd": 35, "spe": 56}, "moves": [{"name": "fly", "power": 90, "accuracy": 95, "type": "flying", "cls": "physical"}, {"name": "take-down", "power": 90, "accuracy": 85, "type": "normal", "cls": "physical"}, {"name": "uproar", "power": 90, "accuracy": 100, "type": "normal", "cls": "special"}, {"name": "razor-wind", "power": 80, "accuracy": 100, "type": "normal", "cls": "special"}], "captureRate": 255, "baseExp": 50, "sprite": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAALVBMVEUAAAAQEBBBKRhzSjGDg4OkYlq9KSC9vb3Ng1rmvWLuYkH/rHP/7pz/9r3///9WNuoZAAAAAXRSTlMAQObYZgAAAa5JREFUWMPt1LFKA0EQBuCLh9buaUAbSTZc1CBBPIQE4isIWRmIRZqgB2onvoAegQ3YeEHIQBqbFIe1jZWCkIPtbLSwEKx9BvcI1jdrYbV/vR+zs8Os49jY2NjY/CXutiFoGIJABiZi3pWRNAHdhpRGJTSIgo+YfqNXGe19vHED0O++I2KJChaODxHLjF7h7OGYeR6Qm154TO7qa55PB0kyEXWPt8mA1yYpcjpwqr2aUjGHRSqohSca+NCmirnkXqUcQF5RJ8G3FPrQkVIQhYt4qwtI2RcGoJMBKFEBwoYGAkpuQNhWDcYvflbA5w3ZiHKFm47VM8h+H0QMQUde5oGWUhqALiDiA909FQCIzaddaLPcAbauf8E4LbZXIicfTFXqg9BAsSLkfyDN1nSsR61bUKoIkH8lt4mDYZy1oK6XGCNMbiUYNtEXehzTG9KoC3rUGJcRByMacFYzgQxHeEkDhZkorw6oSzQTcZmRF7tQQRyS/75sT3ussmNwnFd7+vegg/X9sFcNQ/KV5i6+vPppcnROrsBY4es7ZMygaWf50+i4ftdFx8bGxsbm3/IDKBea6AbhhdgAAAAASUVORK5CYII="}, "rattata": {"id": 19, "types": ["normal"], "base": {"hp": 30, "atk": 56, "def": 35, "spa": 25, "spd": 35, "spe": 72}, "moves": [{"name": "take-down", "power": 90, "accuracy": 85, "type": "normal", "cls": "physical"}, {"name": "uproar", "power": 90, "accuracy": 100, "type": "normal", "cls": "special"}, {"name": "body-slam", "power": 85, "accuracy": 100, "type": "normal", "cls": "physical"}, {"name": "hyper-fang", "power": 80, "accuracy": 90, "type": "normal", "cls": "physical"}], "captureRate": 255, "baseExp": 51, "sprite": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAMFBMVEUAAAAQEBBKKUFaWlpiSgiLSoukGDmkcwi0c73NrGLNzc3VnNXmWnPmzXPu3rT///9wkIOdAAAAAXRSTlMAQObYZgAAAbNJREFUWMPtlDFLw0AYhi+hoeKUgFILUmohUuyvEDLYpWjpYUD7DxxUKNGl2MDhJ51akCpIwc1NLAiB+wHdhY4dCopkuaXgWi/pD7g70KXcO9wReB/u3sv3fQhpaWlp/ZUA1PxrlGIloEsxHKoB1A9VAItGhBRVCBdCUALMkqsGcPmd/wasFQDKyoAttOBlvcGNJGBRsiztd0nArKQl3R2lm3kkfpZLqJdKZXpclgU+wgql0ShoJa3gijOjJvfTLpm2QgsfygIRkOmk4wMR3yhAJnA/QHPS4au4Q2vnJvcRF4ifAOL+yXz53Lb7wpctKQAl/vBnATtO4oe6EDjhAU7PFnAbBFccEKf2CQwZi4M2Y58g80zWHVvK8w6kgAxj+3l+gpdGwGIAed7cGbI4sfsEY/GvXl/MnRqLSTcq97EMgF7nTpXFm5TmH0tY5k57z9tjNuMVlfeQi3vigYobT2NmV+ibh5AxEAMubgzaM8QB/pGvXgiBHK5XmW1SmgyYjZwwtHF9XzQcZNIosRqG8ACj10+27APYkqPLTo3tWG3kZb+ZrQQYhYIaIJNWS0tLS2uV9QujEKugSNyd7gAAAABJRU5ErkJggg=="}, "caterpie": {"id": 10, "types": ["bug"], "base": {"hp": 45, "atk": 30, "def": 35, "spa": 20, "spd": 20, "spe": 45}, "moves": [{"name": "bug-bite", "power": 60, "accuracy": 100, "type": "bug", "cls": "physical"}, {"name": "electroweb", "power": 55, "accuracy": 95, "type": "electric", "cls": "special"}, {"name": "snore", "power": 50, "accuracy": 100, "type": "normal", "cls": "special"}, {"name": "tackle", "power": 40, "accuracy": 100, "type": "normal", "cls": "physical"}], "captureRate": 255, "baseExp": 39, "sprite": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAMFBMVEUAAAAAAAAYWkEge0oxrEFKxSlSYkpq1TF7OUp7g0qs9kHmzZT27ov/QUH/e0H/tDlsaQRjAAAAAXRSTlMAQObYZgAAAbZJREFUGBntwbFrE2EYB+DfJXAk232mg5IMsU3p0CXWQAanu7xQ6I0iXRxSlYI0i8XjA6fg4i1FRRAkWZwKNzUmBI43SwcDId/SLcu1q5OzU7T/wb0OOn3PA8uyLMv6N+I+bsV9CJXe/wIQ/15BqHSz7hc2b9ZXECplP9/uxOvsClJn1z/i6yy7U4eQc5Zl2UrpDqTuZtlKaa2bkCm8ylZKR08OH0Om8DV+p/VT8z2AzE4SHyTR8mhGHkS23ySJjuZHNfIgsk10qKNLVSUPIsXkvKOjVA3Ig0g7OddtHfIkgEw72Io6ERH5kNnbf90K6FalDhFH60bQIvKpDpQ/IF9lk+5XyG/snwLDFAJKfVJqg8wpymaBfO6AOVWtUF/CNXPk6y2YeUyhHsGdTZGvly45fUnEHlzuIl81NcvhlIg8uNxFPufecG5GRD7gTiFRW3zmUcv3gHIXEq4xqupXPeBRFxK9oWGmyQWK1IREbcB8/CLc2GuFTUhUU57O5v7DsDGGiKO+fDSj3cbkWwcyjjGqQkEYeBCqMT+ngMaQck6mTAF7EHNPmHcf4C8Uj59twbIsy/o//gARmZNQERHLaQAAAABJRU5ErkJggg=="}, "weedle": {"id": 13, "types": ["bug", "poison"], "base": {"hp": 40, "atk": 35, "def": 30, "spa": 20, "spd": 20, "spe": 50}, "moves": [{"name": "bug-bite", "power": 60, "accuracy": 100, "type": "bug", "cls": "physical"}, {"name": "poison-sting", "power": 15, "accuracy": 100, "type": "poison", "cls": "physical"}, {"name": "electroweb", "power": 55, "accuracy": 95, "type": "electric", "cls": "special"}], "captureRate": 255, "baseExp": 39, "sprite": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAALVBMVEUAAAAYGBhaWmJqOQiLi5SUWgicKSDFxcXNcxDeWlLunIvurEH/3s3/5nv////6NZQnAAAAAXRSTlMAQObYZgAAAVJJREFUWMPtk7FKw0AcxpPUimOuwXDZxFUohoKkLyEula4ihCSbk1shBsMfgoMIgZudCi4SCoF7FMlgcXDKM3jXvsCXQRC53/z9uHx3XyzLYDAYDP+Eg6HC5cmvC9uBwuprcTUk7/T92WaI8dD3ldzg+aN29S2lPIeFqqNKCQUsPHWdyssGzY9k96GFFv2m0afc0bqoMFFpJREsxLGUkwGCL4S+pBYWgrd1rQQitHQgRK0PyNFrtYWIVR4XLHYbkcLFx8R1PmxwwVYnMHrHhcNX5t3sOpyitXm55lqYgj83o1JwXXoKNg+JYv1uTn+HrUlVJmYNEQrG9DCce0y40O+wF7AOmRY8lR0vMCGIyqTgx+PZElys7WV1TvmymD2C12oHz5zyhqI5usBQ7S8vrn2GrilNyiTK0wCeuB9ltR8yhg+czV9SPL5XQtcyGAwGwx/lByg/eOn1qW2DAAAAAElFTkSuQmCC"}, "metapod": {"id": 11, "types": ["bug"], "base": {"hp": 50, "atk": 20, "def": 55, "spa": 25, "spd": 25, "spe": 30}, "moves": [{"name": "bug-bite", "power": 60, "accuracy": 100, "type": "bug", "cls": "physical"}, {"name": "electroweb", "power": 55, "accuracy": 95, "type": "electric", "cls": "special"}], "captureRate": 120, "baseExp": 72, "sprite": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAG1BMVEUAAAAAAAA5SkFKalJqi1pqpEqDxUq05lL///+2DFm1AAAAAXRSTlMAQObYZgAAASxJREFUWMPtlLFywjAQRGXxAxEQ6kBk0maQR6TFXqA3MX2wvfQp7Dqp+OwU4QPuukxGr3+ztzc3Z0wikUgk/iqTV6Ww/VQGjEphO/JJFXAc+KASrtQJkTphQpIfygCVEEiyk89kr5HsoBDGAxlZioWXsePloCixHTr6r4VYsF23QXtz39ISdgj9mm+3k/Sa1iP7wHaT7+TCpSXJXhZhObBm7PdkLTLsmYy8vANn1hIh25ORLQDsRYLJQyR7D0B4HTO2eQ8PQLimjCxQyQOMWfAED2ApvY1Z9TwHAPG5PjbVEpqRsqbxgLy0yZqmBACUTmjMcRfgpAL8r1A4UY/sLvhQFDvNTB5BKFjAAyUCCuFqp77EyocqSPdk3HTlQ3BT+bvMnHPOJBKJROKf8AMes1NxSpfWWQAAAABJRU5ErkJggg=="}, "kakuna": {"id": 14, "types": ["bug", "poison"], "base": {"hp": 45, "atk": 25, "def": 50, "spa": 25, "spd": 25, "spe": 35}, "moves": [{"name": "bug-bite", "power": 60, "accuracy": 100, "type": "bug", "cls": "physical"}, {"name": "electroweb", "power": 55, "accuracy": 95, "type": "electric", "cls": "special"}], "captureRate": 120, "baseExp": 72, "sprite": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAIVBMVEUAAAAQEBA5OTlKOQBqamp7WgCcewDNnBD2zTH/9s3///9wCmODAAAAAXRSTlMAQObYZgAAAUpJREFUWMPtkrFOwzAQhi1FhbURS1cqpDJSSuqIp0BUwmEDIeyuxUrOM1J9f54g8c6D8gpnsTD4m+/Tf7/PShUKhULhvzLYt6x5AmKOQWMCBrlxOaY0g3uxEFJKM0BPGQEJAHmhcDGmNAPynRzSDF4HpjuZ8AAAX/VKLNwHADfXK6alTHi8BfhnvaJBKDxvgO/1hod3YelFAAC2bik93AsQraX6Tip8Wmsd7Vh6uEU0g/MNIH3WV+74QwMsfaU99XxlaLBb4UpV473uD3VzknZAp30AuJYmTEfqA3CSJlQRE+1Cr8XCfpxIHzTJE8aJNJxYWMRxohaOxH+pO059iCQX2o59ntCwaeUVlKpao32W0J0D6RzBWEdeXkGp/TGaLKGZuaetfF5V0ZGpc4TjmXzGRkq1bE4586rKDFBK5wUoVWUGFAqFQuEv/AIej31QlbdgUAAAAABJRU5ErkJggg=="}, "pikachu": {"id": 25, "types": ["electric"], "base": {"hp": 35, "atk": 55, "def": 40, "spa": 50, "spd": 50, "spe": 90}, "moves": [{"name": "thunderbolt", "power": 90, "accuracy": 100, "type": "electric", "cls": "special"}, {"name": "thunder-punch", "power": 75, "accuracy": 100, "type": "electric", "cls": "physical"}, {"name": "spark", "power": 65, "accuracy": 100, "type": "electric", "cls": "physical"}, {"name": "thunder-shock", "power": 40, "accuracy": 100, "type": "electric", "cls": "special"}], "captureRate": 190, "baseExp": 112, "sprite": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAKlBMVEUAAAAAAAApKSlBQUpiMQhzc4OcUgDFIBjelADmWkH2vSD25lL/9qT////Vai+KAAAAAXRSTlMAQObYZgAAAdlJREFUWMPtlsFqwkAQhjclhB6ztRRReqiHXnoSbz0piLX2JcwliD6A0JsgEuoDlNJTQKzsnkJpSDN9A3PpG3U2ST12J4dCKftjNML/MTObndkwZmRkZPTX5Vb0Wxe/DrQq5nRSHehWBK4PQKtFAWpiU9wctTodygI0SsCZQqfTJgK+P3ZmgAClfltsJ9k+Qf8bKQACQZZlgHptqwC+lhh+ZNleAVz5HRjrAEwGUi4Tr/wX61JaSMzm8wrygo9BD5wjENVKYI3hNDnZbRiqlHJfAHrAuVQmeH9eqooJwB3AABN5egyL+rVF3MrldDtJ5/OwDKADbkSuHJAVgJf7kE1FTmg2lCNKheoOCa7froU2OSo5owLSHeG33s+aJQCuTfKzJhQBsNjRlpEAJHZSrY4tKBNkHeNSqk3XZXUKYEFSApH18D1BfgYAmwZ7CKJhsOsRgHUB7CAMgj5lGM9AIfgJ6wtGA2Ko45UK7lPmUjPGmRThlQr3zCMAM/BxhXz1MLhPAKyiBwCkEH2PkJIlCn+apiKklGDlPQBCYoSQdKBMxUG0o6hx8O9oh53VEAHnqndIj42x/kotpjWYrGgB7Djp5c6R8GgR+Gn5G0cVXwl41bcUIyMjo/+qLw92FGczGN4XAAAAAElFTkSuQmCC"}, "spearow": {"id": 21, "types": ["normal", "flying"], "base": {"hp": 40, "atk": 60, "def": 30, "spa": 31, "spd": 31, "spe": 70}, "moves": [{"name": "fly", "power": 90, "accuracy": 95, "type": "flying", "cls": "physical"}, {"name": "take-down", "power": 90, "accuracy": 85, "type": "normal", "cls": "physical"}, {"name": "uproar", "power": 90, "accuracy": 100, "type": "normal", "cls": "special"}, {"name": "razor-wind", "power": 80, "accuracy": 100, "type": "normal", "cls": "special"}], "captureRate": 255, "baseExp": 52, "sprite": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAMFBMVEUAAAAAAABKQTlqQRh7KSmLe2KcUhisQUrFaiDFtJzm1bTuUkrurFL/pIv/1c3///8/EDwsAAAAAXRSTlMAQObYZgAAAcRJREFUWMPt1TFLAzEUB/AcViu4NFeuBRWpBQe31kJxcLAgLkUwYgYnLYXgaEE44VAQoWS4L1D8AK4KQpHQOgjSIaPSQdq1Q/GwW0dfC859WSV/OG55P95LwuUIsbGxsbExTx2eOxMQnhH5ZgYWdc4MhCZgToYd/S4reLGjQy11wqCF1h0tC4UcvgMIuS3RO7sd6k5eylt0h7mHq+XxtD7uLz1iwNpgNJaw6Hh72B4iQPxmWBvXc/D+bkUDBLiOes2CqOb9/qAfdTGgt/cshFhR7W4UXSCA86FKU9C6jr4xYIEq6FAJVBN6YEaqVek+AKUC6IFZdJCCgSZAqWYfMVJcTUF6AoLW7mwQexLFP6AuF8TZzE3yU8WiKKaDyUi1c40ANJUUeepDvb+q67NnSruMCY/5kJqs5zCAswrPpgGktjKYk3Y97mX5uu+XCrgPwmNulvMNSqWuogB04EdAWFLirhuHUXcDTILQJA5ANecNhr9o3Cz1ThrreOBw5vCGwVVGVjKEnhiAWNmD88tgy+ePy+r1kMS6WHB6ek/dDIn19pCAbtLJ6+DrE7uKaT0pj15GRr9G94eaASdBEsTGxsbG5p/kF5oDo6iM/F7CAAAAAElFTkSuQmCC"}, "mankey": {"id": 56, "types": ["fighting"], "base": {"hp": 40, "atk": 80, "def": 35, "spa": 35, "spd": 45, "spe": 70}, "moves": [{"name": "dynamic-punch", "power": 100, "accuracy": 50, "type": "fighting", "cls": "physical"}, {"name": "submission", "power": 80, "accuracy": 80, "type": "fighting", "cls": "physical"}, {"name": "karate-chop", "power": 50, "accuracy": 100, "type": "fighting", "cls": "physical"}, {"name": "earthquake", "power": 100, "accuracy": 100, "type": "ground", "cls": "physical"}], "captureRate": 190, "baseExp": 61, "sprite": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAALVBMVEUAAAAQEBBqSilzQQC0QTHFc0rVrJzepHPe3t7uc2LutIv23rT/xYP/9s3///9HRxNcAAAAAXRSTlMAQObYZgAAAoFJREFUWMPtlr2K20AQx7XrF9A6scyhKxwRbyMIDsF3TZork4OAMHsp7EYyN42qcBg1foYUwY3zBlfauVMzuAiHSaM3OFxcipR+huxKJzmE01cTCGgkXJj57cxfM7O7mtZYY4019p8ZYXo94Dj6Xi9AFG31esCPesDxfCvqAZOR49QBOsP6QMepVwYmqoqgiR8pByxL/fa4Tkmc1UUZYPhMo9Y6dLmpXA1wS4D2BbY5Ygg2VgPIyA8REVwcS4BAPtBigwQ4wfsdgv9NAWY+0Hob3SUf/wR3u52Pb8ZtjSGAntvJ0TYO0fE3EriXgMmkFJbfyZFQAEUVQAKX41hKnoLufH4nRgrgMYCxhbkJad3JZDZUgL1G3GxSf/dQy79TGg5FR+ZE7ZUdoo9eXIs4gPV0e6jOFANq4+rXLY69z2aqgAohnKc3CDJey9VXP6eX8Gpvpgo6gvVzepz4iB6uH6ZT72hvqwg9BTgySI52A0Gm/vDy7MPR3leAp5bR8wHZOZ70e3+9AIi/Uu9xOPIBV6Z+8/V6ea78oRTQmC4LvVp8WZpJGbzk737B2FETV8ulAnzZeI+NxIt2Ao4375aLc/TDrLNp0RBRCMMz9hxC+YAR9wTlUDTXbcjMBZCExUum1PgTAMsCKAwg5yH190OWwKwwgI1rLp24J0unE0m4xf4UbXDb8nW5j67aLEs2MuKFrq5xXXtBAKHCvkpiiTRWz6sAmuHpWbBKABHPBlkrVvC3+v300Hld5Wiwglk6wS3hlBM0CFjgZGeJGA1KBTASpMuyj0JclRFMO51leXRnLPhUquL0MCzdK61bDpCDUBIMSL2rhqh5+dFYc2NsrLHG/rH9Bu2p+mAO7hqiAAAAAElFTkSuQmCC"}, "zubat": {"id": 41, "types": ["poison", "flying"], "base": {"hp": 40, "atk": 45, "def": 35, "spa": 30, "spd": 40, "spe": 55}, "moves": [{"name": "fly", "power": 90, "accuracy": 95, "type": "flying", "cls": "physical"}, {"name": "sludge-bomb", "power": 90, "accuracy": 100, "type": "poison", "cls": "special"}, {"name": "wing-attack", "power": 60, "accuracy": 100, "type": "flying", "cls": "physical"}, {"name": "air-cutter", "power": 60, "accuracy": 95, "type": "flying", "cls": "special"}], "captureRate": 255, "baseExp": 49, "sprite": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAJFBMVEUAAAAQEBBKQXtiYmJie7RzIFqLtO60Upy9zf/Vc73V1dX///9Jkh9xAAAAAXRSTlMAQObYZgAAActJREFUWMPtVbFOwzAQTUPZY6hYWMIpMl0rNlioda06RhUhYiRKj86VisVemfxAh478Bl+HnVAJJKhvYsFvyvCe353P7xJFAQEBAQF/jZ4QfhLi/kuIAWLi5Teb/elLUwH4+ea2O/6MEC7XDD6lLZ8auNQ69/D7ll+19Sw3oLX2GswMdYK4dnyGAe0Fi5JrQG0PcqIZgtagEwxLVkWtQVOxBa6i5Ua5WcmC1YLjA4KdnEScFIwWlpAh2LcRG7BfmB4WxIYUompe79pbXXnfUUyEiEOjV59j8PUcwbS2gle9tQLbcuGPQka1ap5ettFwodc5J2EZqUbvtm4MOS+TUppyl0eyXDNDHMtFsctjUzIM+m2YZVW85PGCYzBrKLMXVRU6H7IEk2dDYONgX8S04LR8rO9rm1BS84zm6fdCf8ZDMXMCwrqSar+jpkS/bqbj7axLkBOljo1E9aHdd9cYBdNOkDn2YbpLHLyLk07QHe7ZrHElzoWQ7mQcI2cP35xejZzAPtqxAMbN3sDp6E26VKDd2wzFUdQbvbtQWAOnSP2Sa5HRxQDHid32A1TAKIrGlpt0PwiGSY8evwzWmfgsRPL9H5dEAQEBAQH/Dx81ZJax6Qc1uQAAAABJRU5ErkJggg=="}, "geodude": {"id": 74, "types": ["rock", "ground"], "base": {"hp": 40, "atk": 80, "def": 100, "spa": 30, "spd": 30, "spe": 20}, "moves": [{"name": "earthquake", "power": 100, "accuracy": 100, "type": "ground", "cls": "physical"}, {"name": "dig", "power": 80, "accuracy": 100, "type": "ground", "cls": "physical"}, {"name": "rock-slide", "power": 75, "accuracy": 90, "type": "rock", "cls": "physical"}, {"name": "ancient-power", "power": 60, "accuracy": 100, "type": "rock", "cls": "special"}], "captureRate": 255, "baseExp": 60, "sprite": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAHlBMVEUAAAAQEBBBOTFqalKUnJyclIO0tJzF1azN3s3///+CLIGrAAAAAXRSTlMAQObYZgAAAZRJREFUGBntwTFunEAABdC/cAFmE1ZJN2ANTpk1YfYMKQf0t18QH6V1FFBKdzlCctusoxQuwHZrad5DFEVRFL11dY3XS0vcaCzwWulpLiR1e7zSaZFUy8niJYkFkC7yqmf1agHUJbYlfrBAevFDO82ia4F6WSw23c66ALtP79pWwbjmiGSalxZb0lleGXbfHnKa97/2rLNqkKbP2HCaNYwZkp8PPH/4+Lshs6qSpu9Yl87ychluf3yRhq9/GvLovLwmi1WnWYMCklmPhobkXXnupekeq06zH52zif4byapnpUH3WJMu6mmY7cS7sqwlkpVMIy9ZrEilsciZIe8kjdVIsh3yvD1fZLHGDzzkAdgfzxJbXlWGYU8jizVeRpc8w87x0Q3L5jw40rDHqkRSw4CD4z8lXde0jqTFulIaGXZy7Oq6IdmRoW4YsKWURuZs2ZBsyODY0o8ZNhmJgdbxqmOwCXuSGbYdRjIgyXkVLFCO7AKekRgyAGlhjLEAEslneFZBiycqXfACg6eSIkMURVEURSv+ApO/fV0rwDRoAAAAAElFTkSuQmCC"}, "paras": {"id": 46, "types": ["bug", "grass"], "base": {"hp": 35, "atk": 70, "def": 55, "spa": 45, "spd": 55, "spe": 25}, "moves": [{"name": "leech-life", "power": 80, "accuracy": 100, "type": "bug", "cls": "physical"}, {"name": "giga-drain", "power": 75, "accuracy": 100, "type": "grass", "cls": "special"}, {"name": "mega-drain", "power": 40, "accuracy": 100, "type": "grass", "cls": "special"}, {"name": "fury-cutter", "power": 40, "accuracy": 95, "type": "bug", "cls": "physical"}], "captureRate": 190, "baseExp": 57, "sprite": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAMFBMVEUAAAAQEBA5KRBaWlpiKSlzShikpM20YiC9QUHFtCDNzc3mgyn2amr/rGL/1VL/9v8fPTZ8AAAAAXRSTlMAQObYZgAAAfhJREFUWMPtlLFq3EAQhldOhF3uOkWcpElkggpXRpwNF4Jd2hACLoSKQ0XIAwQpHFMcLgIp9sBNwMVdfZ07YYKKwf0ZFjdHKrEPEDBuTNKFy0gm2NVqVWc/EGwxn/4ZNCvGHA6Hw9GVNbnfrf5EnXYyTpT6edqcpLQKuLpRl5M6QiolLQVZT7GmbpTat+poLiVn7B2Z6mu78P56Pp58ocPB1bWaWwiHEzmd8JUgOJAUNeZWggi2sMwkMW0XHkspIkBEW4EJsZkHwVYJG9PxxKIlxlbyEICeb9O76VsJw2FcG9EzKe2EONVxAvnn7Q1p09GjSBM/EgjhlWgvXx3u/X57UenqOwlh3l5/vPh0O6MExCSHHF62Ccd68UGQgKOoZyOsar2YPZmViOfLj9QRBKItQFf9szeIo51lfzccHoXA2wTcjGgvcEc8332d6qdJxs0daQyhpFXqb/d7qdaFD5lZqDCHtILR+dmM6nXB4sQQkdYCD/5UmEDUo/qq4Mw3C1hyb0/gL4C0ETKjMKDvVTDvVix7ENQCZsCNAlIA3QgvWg/8eqOQxxkzCD7ds7tLRGfdDMSOTJ/BD0p+3x4FFKxFwPtNGFzoJs8osBf84TzNQNxaiP8NZMLjD9oblLzLX3+AQ8E6CeV6p3q/7PZ+5nWsdzgcDsd/z19fpunr0JUF5AAAAABJRU5ErkJggg=="}, "clefairy": {"id": 35, "types": ["fairy"], "base": {"hp": 70, "atk": 45, "def": 48, "spa": 60, "spd": 65, "spe": 35}, "moves": [{"name": "dream-eater", "power": 100, "accuracy": 100, "type": "psychic", "cls": "special"}, {"name": "take-down", "power": 90, "accuracy": 85, "type": "normal", "cls": "physical"}, {"name": "flamethrower", "power": 90, "accuracy": 100, "type": "fire", "cls": "special"}, {"name": "ice-beam", "power": 90, "accuracy": 100, "type": "ice", "cls": "special"}], "captureRate": 150, "baseExp": 113, "sprite": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAJ1BMVEUAAAAQEBBaMSBzSjmUlJScUlKcg3O0OSnme3vuQTn/rKz/1b3///+zM2eBAAAAAXRSTlMAQObYZgAAActJREFUWMPtlTFr20AUx69tDjr6CoXidIhduqRLkcBzC5lMhhgqMFI3g75Ch06BGkT1CTqKRhDeTSYRFfpl1JgPlcFy7Ul3nqPfdMP78efuHu8pNTAwMDDwfNHR1VH1r3MqXyMMPyuVA5VS6lUYnDnqX87SVaYBuFLTWboKXEKYfmINwDK7S9Nw4hI+BJBQR5YKZqvA+Ak5MTXchZM3LmF6vhUqC/wNjEtQ03NLBWwsiEx8hNud0NyWxoycguQQwdiCXBtz5myKEmiMEUBKYz66flzHACIAzXxhluve8hOlEsiBGrhvC5Nd9wqXX7SlfoAHcvjWlibrv/X3dQTVBjYkVA3zt/0BmrpK9oKlXUT9Qt5YMvsL7uv6dwI3i6z3lXQLZDnm/Sl1BsRF1v9KMQBs/vzcHuJi2X+JF9u6f51QSVE5euN0a/zgv+D46C6iI3ELuwgA6kYKXL0UHyY08u44QXwEexjgIWg5DJCxh2APAorY+UpadkYjIoWUzuEad4aIv7BnLO4hrqXcO+PSY5eIlFFXX5Q+WyIWkShaiogUXltFX8xlpLSIyMhrB508tkYpFd9ceArKGKWU0pePX4/bpB6DeGBgYOBZ8AQHOVcRdazSMAAAAABJRU5ErkJggg=="}}, "locations": {"pallet-town": {"label": "Pallet Town", "enc": []}, "kanto-route-1": {"label": "Route 1", "enc": [["pidgey", 2, 5, 50], ["rattata", 2, 4, 50]]}, "viridian-forest": {"label": "Viridian Forest", "enc": [["caterpie", 3, 5, 30], ["weedle", 3, 5, 30], ["metapod", 4, 6, 10], ["kakuna", 4, 6, 10], ["pikachu", 3, 5, 5]]}, "kanto-route-22": {"label": "Route 22", "enc": [["rattata", 2, 4, 40], ["spearow", 2, 4, 35], ["mankey", 2, 5, 25]]}, "mt-moon": {"label": "Mt. Moon", "enc": [["zubat", 6, 10, 45], ["geodude", 7, 10, 30], ["paras", 8, 10, 15], ["clefairy", 8, 11, 5]]}}, "starters": ["bulbasaur", "charmander", "squirtle"]};
+
+/* GAUNTLET — journey, artifact test build.
+   Embedded Kanto slice (no external data), GM via the keyless artifact API,
+   saves via window.storage. Engine resolves all numbers; the GM narrates. */
+
+const CONFIG = { TEAM_MAX:6, START_LEVEL:5, CRIT_RATE:1/16, CRIT_MULT:1.5, STAB:1.5,
+  BST_PIVOT:480, SCALE_MIN:0.85, SCALE_MAX:1.25, POTION_HEAL:60, CHAT_KEEP:10 };
+const MART = { pokeball:200, greatball:600, ultraball:1200, potion:300 };
+const BALL_MULT = { pokeball:1, greatball:1.5, ultraball:2 };
+
+const TYPE_COLORS = {
+  normal:"#A8A77A", fire:"#EE8130", water:"#6390F0", electric:"#F7D02C",
+  grass:"#7AC74C", ice:"#96D9D6", fighting:"#C22E28", poison:"#A33EA1",
+  ground:"#E2BF65", flying:"#A98FF3", psychic:"#F95587", bug:"#A6B91A",
+  rock:"#B6A136", ghost:"#735797", dragon:"#6F35FC", dark:"#9A7B63",
+  steel:"#B7B7CE", fairy:"#D685AD" };
+const TYPE_CHART = {
+  normal:{rock:.5,ghost:0,steel:.5},
+  fire:{fire:.5,water:.5,grass:2,ice:2,bug:2,rock:.5,dragon:.5,steel:2},
+  water:{fire:2,water:.5,grass:.5,ground:2,rock:2,dragon:.5},
+  electric:{water:2,electric:.5,grass:.5,ground:0,flying:2,dragon:.5},
+  grass:{fire:.5,water:2,grass:.5,poison:.5,ground:2,flying:.5,bug:.5,rock:2,dragon:.5,steel:.5},
+  ice:{fire:.5,water:.5,grass:2,ice:.5,ground:2,flying:2,dragon:2,steel:.5},
+  fighting:{normal:2,ice:2,poison:.5,flying:.5,psychic:.5,bug:.5,rock:2,ghost:0,dark:2,steel:2,fairy:.5},
+  poison:{grass:2,poison:.5,ground:.5,rock:.5,ghost:.5,steel:0,fairy:2},
+  ground:{fire:2,electric:2,grass:.5,poison:2,flying:0,bug:.5,rock:2,steel:2},
+  flying:{electric:.5,grass:2,fighting:2,bug:2,rock:.5,steel:.5},
+  psychic:{fighting:2,poison:2,psychic:.5,dark:0,steel:.5},
+  bug:{fire:.5,grass:2,fighting:.5,poison:.5,flying:.5,psychic:2,ghost:.5,dark:2,steel:.5,fairy:.5},
+  rock:{fire:2,ice:2,fighting:.5,ground:.5,flying:2,bug:2,steel:.5},
+  ghost:{normal:0,psychic:2,ghost:2,dark:.5},
+  dragon:{dragon:2,steel:.5,fairy:0},
+  dark:{fighting:.5,psychic:2,ghost:2,dark:.5,fairy:.5},
+  steel:{fire:.5,water:.5,electric:.5,ice:2,rock:2,steel:.5,fairy:2},
+  fairy:{fire:.5,fighting:2,poison:.5,dragon:2,dark:2,steel:.5} };
+
+const $ = (s,r=document)=>r.querySelector(s);
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+const rand = (a,b)=>a+Math.random()*(b-a);
+const ri = (a,b)=>Math.floor(rand(a,b+1));
+const cap = s => String(s).split("-").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ");
+const escHtml = s => String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const eff = (t,dts)=>dts.reduce((m,d)=>m*(TYPE_CHART[t]?.[d] ?? 1),1);
+
+/* ---------------- save (artifact storage) ---------------- */
+
+const SAVE_KEY = "gauntlet-journey";
+async function save(){
+  try { await window.storage.set(SAVE_KEY, JSON.stringify({ G, chat: GM.chat.slice(-CONFIG.CHAT_KEEP*2) })); } catch(e){}
+}
+async function load(){
+  try { const r = await window.storage.get(SAVE_KEY); const d = JSON.parse(r.value);
+        if (d?.G){ G = d.G; GM.chat = d.chat||[]; return true; } } catch(e){}
+  return false;
+}
+
+/* ---------------- engine ---------------- */
+
+let G = null;
+const GM = { busy:false, chat:[] };
+
+function freshGame(name){
+  return { trainer:{ name, money:3000, balls:{pokeball:5,greatball:0,ultraball:0}, potions:2 },
+    party:[], box:[], activeIdx:0, location:null, battle:null, draft:null,
+    counters:{battles:0,sessions:1}, consequences:{}, memory:{}, journal:[] };
+}
+const active = () => G.party[G.activeIdx];
+
+function bstScale(base){ const b=Object.values(base).reduce((a,x)=>a+x,0);
+  return Math.min(CONFIG.SCALE_MAX, Math.max(CONFIG.SCALE_MIN, CONFIG.BST_PIVOT/b)); }
+function statsAt(base, level, boost=1){
+  const lv = Math.round(level*bstScale(base));
+  const f = s => Math.floor(2*s*lv/100)+5;
+  return { maxhp:Math.floor(2*base.hp*lv/100)+lv+10, atk:Math.floor(f(base.atk)*boost),
+    def:Math.floor(f(base.def)*boost), spa:Math.floor(f(base.spa)*boost),
+    spd:Math.floor(f(base.spd)*boost), spe:Math.floor(f(base.spe)*boost) };
+}
+function buildMon(species, level){
+  const d = PACK.dex[species];
+  if (!d) throw new Error("not in this build: " + species);
+  const mon = { species, level, name:cap(species), types:d.types, base:d.base, boost:1,
+    sprite:d.sprite, moves:d.moves.slice(0,4), baseExp:d.baseExp, captureRate:d.captureRate,
+    exp:Math.pow(level,3), hp:0, stats:null };
+  mon.stats = statsAt(d.base, level);
+  mon.hp = mon.stats.maxhp;
+  return mon;
+}
+function computeDamage(att, def, mv){
+  const e = eff(mv.type, def.types);
+  if (e===0) return {dmg:0,eff:e,crit:false};
+  const A = mv.cls==="special"?att.stats.spa:att.stats.atk;
+  const D = mv.cls==="special"?def.stats.spd:def.stats.def;
+  const crit = Math.random()<CONFIG.CRIT_RATE;
+  const stab = att.types.includes(mv.type)?CONFIG.STAB:1;
+  const lv = Math.round(att.level*bstScale(att.base));
+  let dmg = Math.floor(Math.floor(Math.floor(2*lv/5+2)*mv.power*A/D)/50)+2;
+  dmg = Math.floor(dmg*stab*e*(crit?CONFIG.CRIT_MULT:1)*rand(.85,1));
+  return {dmg:Math.max(1,dmg), eff:e, crit};
+}
+function enemyChooseMove(en, tg){
+  let best=en.moves[0], bs=-1;
+  for (const mv of en.moves){
+    const sc = mv.power*eff(mv.type,tg.types)*(en.types.includes(mv.type)?CONFIG.STAB:1)*(mv.accuracy/100)*rand(.8,1.2);
+    if (sc>bs){bs=sc;best=mv;}
+  }
+  return best;
+}
+function gainExp(mon, foe){
+  const gain = Math.floor(foe.baseExp*foe.level/7);
+  mon.exp = (mon.exp||Math.pow(mon.level,3))+gain;
+  taleEngine(`${mon.name} gained ${gain} EXP.`);
+  while (mon.exp >= Math.pow(mon.level+1,3) && mon.level<100){
+    const pct = mon.hp/mon.stats.maxhp;
+    mon.level++; mon.stats = statsAt(mon.base, mon.level, mon.boost);
+    mon.hp = Math.ceil(mon.stats.maxhp*pct);
+    taleEngine(`${mon.name} grew to Lv.${mon.level}!`, true);
+  }
+}
+
+/* consequences */
+function conseqDue(){
+  const c = G.counters;
+  return Object.entries(G.consequences).filter(([k,q]) =>
+    (q.at_location && q.at_location===G.location) ||
+    (q.after_battles!=null && c.battles-(q.base?.battles??0)>=q.after_battles) ||
+    (q.after_sessions!=null && c.sessions-(q.base?.sessions??0)>=q.after_sessions));
+}
+function stageConsequence(key,q){ q.base={...G.counters}; G.consequences[key]=q; }
+function fireConsequence(key){
+  const q=G.consequences[key]; if(!q) return null;
+  delete G.consequences[key];
+  G.journal.push(`[${G.location||"—"}] CONSEQUENCE — ${key}: ${q.what||""}`);
+  return q;
+}
+
+/* ---------------- GM (keyless artifact API) ---------------- */
+
+const VALID_SPECIES = Object.keys(PACK.dex).join(", ");
+const VALID_LOCATIONS = Object.keys(PACK.locations).join(", ");
+
+const GM_PROTOCOL = `You are the Game Master of a Pokémon journey (Kanto opening slice). A deterministic engine resolves ALL mechanics — you never state damage, odds, or outcomes yourself; narrate and direct only. Everything must stay inside this build's content. Valid species: ${VALID_SPECIES}. Valid locations: ${VALID_LOCATIONS}.
+
+Respond ONLY with JSON, no markdown fences:
+{"say":"2-5 sentences, second person, present tense, NPCs voiced inline.","directives":[...],"suggest":["short player action", "...up to 3"]}
+
+Directives (zero or more):
+{"type":"trainer_battle","name":"NPC name","team":"species:level,species:level"} — levels honest to the party in WORLD STATE; telegraph over-leveled threats first; valid species only.
+{"type":"encounter","species":"valid-species","level":N}
+{"type":"travel","location":"valid-location"} — when the player wants to move.
+{"type":"stage_consequence","key":"kebab-key","what":"one line","at_location":"valid-location"} — or "after_battles":N / "after_sessions":N. Stage one whenever the player does something the world would remember.
+{"type":"fire_consequence","key":"key"} — when WORLD STATE shows a due consequence, weave it into THIS narration and fire it. Never sit on one.
+{"type":"memory_set","ns":"npcs|plots|facts|badges","key":"k","value":any}
+{"type":"journal","text":"one line"}
+
+At most one battle directive per response. Battle outcomes reach you via ENGINE EVENTS — narrate results only then. Loss is a blackout; let it ripple.`;
+
+function stateDigest(){
+  const due = conseqDue().map(([k,q])=>`${k}: ${q.what}`);
+  const party = G.party.map(m=>`${m.name} L${m.level} ${m.hp}/${m.stats.maxhp}${m.hp<=0?" FNT":""}`).join(", ");
+  return [
+    `Trainer: ${G.trainer.name} | money ₽${G.trainer.money} | balls ${G.trainer.balls.pokeball}/${G.trainer.balls.greatball}/${G.trainer.balls.ultraball} | potions ${G.trainer.potions}`,
+    `Location: ${G.location||"not set"} | session ${G.counters.sessions} | battles ${G.counters.battles}`,
+    `Party: ${party||"none"} | Box: ${G.box.length}`,
+    due.length ? `DUE CONSEQUENCES (weave in and fire NOW): ${due.join(" | ")}` : "No due consequences.",
+    `Journal tail: ${G.journal.slice(-4).join(" / ")||"—"}`,
+  ].join("\n");
+}
+
+async function callGM(playerText, events){
+  setGMStatus("the GM is thinking…", true);
+  const userBlock = `[WORLD STATE]\n${stateDigest()}\n\n` +
+    (events?.length ? `[ENGINE EVENTS]\n${events.join("\n")}\n\n` : "") +
+    `[PLAYER]\n${playerText||"(no words — react to the engine events)"}\n\n[PROTOCOL]\n${GM_PROTOCOL}`;
+  const messages = [...GM.chat, {role:"user",content:userBlock}];
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ model:"claude-sonnet-4-6", max_tokens:1000, messages }),
+    });
+    if (!res.ok) throw new Error("API "+res.status);
+    const data = await res.json();
+    const text = (data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("");
+    GM.chat.push({role:"user",content:userBlock},{role:"assistant",content:text});
+    if (GM.chat.length>CONFIG.CHAT_KEEP*2) GM.chat = GM.chat.slice(-CONFIG.CHAT_KEEP*2);
+    setGMStatus("");
+    try { return JSON.parse(text.replace(/```json|```/g,"").trim()); }
+    catch(e){ return {say:text, directives:[], suggest:[]}; }
+  } catch(e){
+    setGMStatus("GM unreachable");
+    taleEngine("The GM is out of reach ("+e.message+") — engine keeps running.");
+    return null;
+  }
+}
+
+async function applyDirectives(d){
+  if (!d?.directives) return;
+  for (const dir of d.directives){
+    try {
+      if (dir.type==="stage_consequence"){ const {type,key,...q}=dir; stageConsequence(key,q); }
+      else if (dir.type==="fire_consequence"){ const q=fireConsequence(dir.key); if(q) taleConseq(`${dir.key} — ${q.what||""}`); }
+      else if (dir.type==="memory_set"){ (G.memory[dir.ns] ??= {})[dir.key]=dir.value; }
+      else if (dir.type==="journal"){ G.journal.push(`[${G.location||"—"}] ${dir.text}`); }
+      else if (dir.type==="travel" && PACK.locations[dir.location]){ G.location = dir.location; taleEngine(`Arrived: ${PACK.locations[dir.location].label}.`); }
+      else if (dir.type==="encounter" && !G.battle){ startWild(dir.species, dir.level); }
+      else if (dir.type==="trainer_battle" && !G.battle){ startTrainerBattle(dir.name, dir.team); }
+    } catch(e){ taleEngine(`(directive ${dir.type} skipped: ${e.message})`); }
+  }
+}
+
+async function gmBeat(playerText, events){
+  if (GM.busy) return;
+  GM.busy = true;
+  const d = await callGM(playerText, events);
+  if (d){ if (d.say) taleGM(d.say); await applyDirectives(d); renderSuggestions(d.suggest||[]); }
+  GM.busy = false;
+  await save(); renderAll();
+}
+
+/* ---------------- tale ---------------- */
+
+const tale = ()=>$("#tale");
+const taleScroll = ()=>{ tale().scrollTop = tale().scrollHeight; };
+function taleGM(t){ tale().insertAdjacentHTML("beforeend",`<div class="gm-msg tale-voice fadein"><span class="who">game master</span>${escHtml(t)}</div>`); taleScroll(); }
+function taleEngine(t,hot){ tale().insertAdjacentHTML("beforeend",`<div class="engine-msg ${hot?"hot":""}">${escHtml(t)}</div>`); taleScroll(); }
+function talePlayer(t){ tale().insertAdjacentHTML("beforeend",`<div class="player-msg fadein"><em>${escHtml(t)}</em></div>`); taleScroll(); }
+function taleConseq(t){ tale().insertAdjacentHTML("beforeend",`<div class="conseq-msg fadein">⚠ ${escHtml(t)}</div>`); taleScroll(); }
+function setGMStatus(t,b){ const el=$("#gm-status"); el.textContent=t||""; el.className="r"+(b?" thinking":""); }
+
+/* ---------------- render ---------------- */
+
+function setAccent(){
+  const t = G?.party?.length ? active().types[0] : "normal";
+  const c = TYPE_COLORS[t]||TYPE_COLORS.normal;
+  document.documentElement.style.setProperty("--accent", c);
+  document.documentElement.style.setProperty("--accent-soft", c+"22");
+}
+const hpbarHTML = m => { const p=Math.max(0,m.hp/m.stats.maxhp);
+  return `<div class="hpbar ${p<=.2?"crit":p<=.5?"low":""}"><i style="transform:scaleX(${p})"></i></div>`; };
+const typeTags = ts => ts.map(t=>`<span class="tag" style="color:${TYPE_COLORS[t]}">${t}</span>`).join("");
+const plateHTML = m => `<div class="plate">
+  <div class="nm"><b class="silk">${m.name}</b>${typeTags(m.types)}<span class="lv">Lv.${m.level}</span></div>
+  <div class="hp-row">${hpbarHTML(m)}<span class="hp-num">${Math.max(0,m.hp)}/${m.stats.maxhp}</span></div></div>`;
+
+function renderCardStrip(){
+  if (!G){ $("#card-strip").innerHTML=""; return; }
+  const t = G.trainer;
+  $("#card-strip").innerHTML =
+    `<span><b>${escHtml(t.name)}</b></span><span>₽<b>${t.money}</b></span>`+
+    `<span>balls <b>${t.balls.pokeball}/${t.balls.greatball}/${t.balls.ultraball}</b></span>`+
+    `<span>potions <b>${t.potions}</b></span>`+
+    `<span>@ <b>${G.location?PACK.locations[G.location].label:"—"}</b></span><span class="silk" style="font-size:9px">S${G.counters.sessions}</span>`;
+}
+
+function renderStage(){
+  const inner = $("#stage-inner");
+  $("#stage-flag").textContent = "";
+  if (!G){ inner.innerHTML=""; return; }
+  if (G.draft){
+    inner.innerHTML = `<div class="tc fadein">
+      <p class="eyebrow">first light</p><h2 class="silk">Choose your partner</h2>
+      <p class="sub">Three from the professor's case. The other two go to trainers you'll meet again.</p>
+      <div class="tc-grid">${G.draft.map((m,i)=>`
+        <button class="mon-card" data-pick="${i}">
+          <img class="px" src="${m.sprite}" alt="${m.name}">
+          <span class="nm silk">${m.name}</span>
+          <span class="types">${typeTags(m.types)}</span>
+          <span class="meta">${m.moves.map(mv=>cap(mv.name)).join(" · ")}</span>
+        </button>`).join("")}</div></div>`;
+    inner.querySelectorAll("[data-pick]").forEach(el=>el.addEventListener("click",()=>pickStarter(+el.dataset.pick)));
+    return;
+  }
+  if (G.battle){
+    const b=G.battle, me=active();
+    $("#stage-flag").textContent = b.kind==="trainer"?`trainer ${b.name} · ${b.queue.length} in reserve`:"wild encounter";
+    inner.innerHTML = `
+      <div class="battle-flag silk">${b.kind==="trainer"?"VS <b>"+escHtml(String(b.name)).toUpperCase()+"</b>":"WILD <b>"+b.foe.name.toUpperCase()+"</b>"}</div>
+      <div class="combatant enemy">${plateHTML(b.foe)}
+        <div class="sprite" id="foe-sprite"><img class="px" src="${b.foe.sprite}" alt="${b.foe.name}"></div></div>
+      <div class="combatant player">
+        <div class="sprite" id="me-sprite"><img class="px" src="${me.sprite}" alt="${me.name}" style="transform:scaleX(-1)"></div>
+        ${plateHTML(me)}</div>`;
+    return;
+  }
+  const due = conseqDue();
+  inner.innerHTML = `<div class="tc fadein">
+    <p class="eyebrow">${G.location?escHtml(PACK.locations[G.location].label):"the journey"}</p>
+    <h2 class="silk">${escHtml(G.trainer.name)}'s party</h2>
+    <p class="sub">₽${G.trainer.money} · box ${G.box.length} · ${G.counters.battles} battles fought</p>
+    <div class="tc-grid">${G.party.map((m,i)=>`
+      <div class="mon-card" style="${i===G.activeIdx?"border-color:var(--accent)":""}">
+        <img class="px" src="${m.sprite}" alt="${m.name}" style="${m.hp<=0?"filter:grayscale(1) brightness(.6)":""}">
+        <span class="nm silk">${m.name}</span>
+        <span class="meta">Lv.${m.level}${m.hp<=0?" · FAINTED":""}</span>
+        <span class="mini-hp">${hpbarHTML(m)}<span class="hp-num">${Math.max(0,m.hp)}/${m.stats.maxhp}</span></span>
+      </div>`).join("")}</div>
+    <div class="loc-row">${Object.entries(PACK.locations).map(([k,v])=>
+      `<button class="act ghost" data-go="${k}" ${k===G.location?"disabled":""}>→ ${v.label}</button>`).join("")}</div>
+    ${due.length?`<div class="world-block"><div class="wt silk">THE WORLD STIRS</div>${
+      due.map(([k,q])=>`<p><b>${escHtml(k)}</b> — ${escHtml(q.what||"")}</p>`).join("")}</div>`:""}
+  </div>`;
+  inner.querySelectorAll("[data-go]").forEach(el=>el.addEventListener("click",()=>doTravel(el.dataset.go)));
+}
+
+let suggestions = [];
+function renderSuggestions(s){ suggestions=(s||[]).slice(0,3); renderActions(); }
+function actBtn(label, fn, cls=""){
+  const b=document.createElement("button"); b.className="act "+cls; b.innerHTML=label;
+  b.addEventListener("click",fn); return b;
+}
+function renderActions(){
+  const row=$("#btn-row"); row.innerHTML="";
+  if (!G || G.draft) return;
+  if (G.battle){
+    const b=G.battle, me=active();
+    if (b.mustSwitch){
+      G.party.forEach((m,i)=>{ if(i!==G.activeIdx&&m.hp>0)
+        row.appendChild(actBtn(`GO ${m.name.toUpperCase()}`,()=>doSwitch(i),"primary silk")); });
+      return;
+    }
+    me.moves.forEach((mv,i)=>{
+      const e=eff(mv.type,b.foe.types);
+      const hint=e===0?"×0":e!==1?"×"+e:"";
+      const btn=actBtn(`<span class="mn">${cap(mv.name)}</span><span class="mi"><span>${mv.type} ${mv.power}</span><span>${hint}</span></span>`,()=>doMove(i),"move");
+      btn.style.setProperty("--mv",TYPE_COLORS[mv.type]);
+      row.appendChild(btn);
+    });
+    G.party.forEach((m,i)=>{ if(i!==G.activeIdx&&m.hp>0) row.appendChild(actBtn(`↔ ${m.name}`,()=>doSwitch(i),"ghost")); });
+    if (b.kind==="wild"){
+      for (const ball of ["pokeball","greatball","ultraball"])
+        if (G.trainer.balls[ball]>0) row.appendChild(actBtn(`● ${ball} ×${G.trainer.balls[ball]}`,()=>doCatch(ball)));
+      row.appendChild(actBtn("RUN",doRun,"ghost silk"));
+    }
+    if (G.trainer.potions>0) row.appendChild(actBtn(`+ potion ×${G.trainer.potions}`,()=>doPotion(G.activeIdx),"ghost"));
+    return;
+  }
+  row.appendChild(actBtn("EXPLORE THE GRASS",doExplore,"primary silk"));
+  row.appendChild(actBtn("POKÉ CENTER",doHeal,"ghost"));
+  for (const item of ["pokeball","potion"]) row.appendChild(actBtn(`buy ${item} ₽${MART[item]}`,()=>doBuy(item),"ghost"));
+  for (const s of suggestions) row.appendChild(actBtn(escHtml(s),()=>{ $("#say").value=s; sendSay(); },"suggest"));
+}
+function renderAll(){ setAccent(); renderCardStrip(); renderStage(); renderActions(); }
+
+/* ---------------- battle flow ---------------- */
+
+let busy=false;
+function lockUI(v){ busy=v; $("#btn-row").style.pointerEvents=v?"none":"auto"; $("#btn-row").style.opacity=v?.55:1; }
+function stamp(text,cls){
+  const el=document.createElement("div"); el.className=`stamp silk ${cls}`; el.textContent=text;
+  $("#stage-inner").appendChild(el); setTimeout(()=>el.remove(),900);
+}
+function strike(att,def,mv,defIsPlayer,events){
+  const who = defIsPlayer ? (G.battle.kind==="trainer"?"Enemy ":"Wild ")+att.name : att.name;
+  if (Math.random()*100>mv.accuracy){ taleEngine(`${who} used ${cap(mv.name)} — it missed.`); events.push(`${who} missed`); return; }
+  const {dmg,eff:e,crit}=computeDamage(att,def,mv);
+  def.hp=Math.max(0,def.hp-dmg);
+  const sp=$(defIsPlayer?"#me-sprite":"#foe-sprite");
+  if (sp){ sp.classList.remove("shake"); void sp.offsetWidth; sp.classList.add("shake"); }
+  if (e===0){ taleEngine(`${who} used ${cap(mv.name)} — no effect on ${def.name}.`); stamp("NO EFFECT","immune"); return; }
+  if (e>1) stamp(crit?"CRIT · SUPER EFFECTIVE":"SUPER EFFECTIVE","super");
+  else if (e<1) stamp("NOT VERY EFFECTIVE","weak");
+  else if (crit) stamp("CRITICAL","crit");
+  taleEngine(`${who} used ${cap(mv.name)} — ${dmg} damage.${e>1?" Super effective!":""}${crit?" Critical hit!":""}`, e>1||crit);
+  events.push(`${who} hit ${def.name} with ${cap(mv.name)} for ${dmg}`);
+}
+
+function startWild(species, level){
+  const foe = buildMon(species, level||Math.max(2,active().level-1));
+  if (active().hp<=0) G.activeIdx = G.party.findIndex(m=>m.hp>0);
+  G.counters.battles++;
+  G.battle = { kind:"wild", foe, queue:[], name:null, payout:0, mustSwitch:false };
+  taleEngine(`A wild ${foe.name} Lv.${foe.level} appeared!`, true);
+  renderAll();
+}
+function startTrainerBattle(name, teamSpec){
+  const team = String(teamSpec).split(",").map(p=>{ const [sp,lv]=p.split(":"); return buildMon(sp.trim().toLowerCase(), parseInt(lv,10)||5); });
+  if (active().hp<=0) G.activeIdx = G.party.findIndex(m=>m.hp>0);
+  G.counters.battles++;
+  G.battle = { kind:"trainer", foe:team[0], queue:team.slice(1), name, payout:team.reduce((a,m)=>a+m.level,0)*15, mustSwitch:false };
+  taleEngine(`Trainer ${name} sent out ${team[0].name} Lv.${team[0].level}!`, true);
+  renderAll();
+}
+
+async function doExplore(){
+  if (busy||G.battle) return;
+  if (!G.party.some(m=>m.hp>0)){ taleEngine("The whole party has fainted — heal first."); return; }
+  if (!G.location){ talePlayer("I look for wild Pokémon"); await gmBeat("I want to find wild Pokémon but no location is set. Pick a fitting start and use the travel directive.",[]); return; }
+  const enc = PACK.locations[G.location].enc;
+  if (!enc.length){ taleEngine(`Nothing stirs in ${PACK.locations[G.location].label}.`);
+    await gmBeat(`I searched ${G.location} but it has no wild Pokémon. Narrate and suggest where to go.`,[]); return; }
+  const total = enc.reduce((a,e)=>a+e[3],0);
+  let roll=Math.random()*total, p=enc[0];
+  for (const e of enc){ roll-=e[3]; if(roll<=0){p=e;break;} }
+  startWild(p[0], ri(p[1],p[2]));
+  await save();
+}
+
+async function endBattle(events, summary){
+  G.battle=null; await save(); renderAll();
+  await gmBeat(null, [...events, summary]);
+}
+async function foeDefeated(events){
+  const b=G.battle;
+  taleEngine(`${b.kind==="trainer"?"Enemy":"Wild"} ${b.foe.name} fainted!`, true);
+  events.push(`${b.foe.name} fainted`);
+  gainExp(active(), b.foe);
+  if (b.kind==="trainer" && b.queue.length){
+    b.foe=b.queue.shift();
+    taleEngine(`${b.name} sent out ${b.foe.name} Lv.${b.foe.level}.`, true);
+    await save(); renderAll(); return;
+  }
+  if (b.kind==="trainer"){
+    G.trainer.money += b.payout;
+    taleEngine(`Victory! ${b.name} pays out ₽${b.payout}.`, true);
+    await endBattle(events, `Player WON vs trainer ${b.name}, earned ₽${b.payout}.`); return;
+  }
+  await endBattle(events, `Player defeated the wild Pokémon.`);
+}
+async function blackout(events){
+  const lost=Math.floor(G.trainer.money/2);
+  G.trainer.money-=lost;
+  G.party.forEach(m=>m.hp=m.stats.maxhp);
+  taleEngine(`${G.trainer.name} blacked out! Rushed to a Pokémon Center — lost ₽${lost}.`, true);
+  G.journal.push(`[${G.location||"—"}] Blacked out, lost ₽${lost}.`);
+  await endBattle(events, `Player BLACKED OUT, lost ₽${lost}. Let it ripple; consider staging a consequence.`);
+}
+async function playerFaint(events){
+  taleEngine(`${active().name} fainted.`, true);
+  events.push(`${active().name} fainted`);
+  const alive=G.party.map((m,i)=>({m,i})).filter(x=>x.m.hp>0);
+  if (!alive.length){ await blackout(events); return; }
+  if (alive.length===1){ G.activeIdx=alive[0].i; taleEngine(`Go, ${active().name}!`); await save(); renderAll(); return; }
+  G.battle.mustSwitch=true; await save(); renderAll();
+}
+
+async function doMove(i){
+  if (busy||!G.battle||G.battle.mustSwitch) return;
+  lockUI(true);
+  const events=[];
+  const me=active(), foe=G.battle.foe;
+  const mv=me.moves[i], fm=enemyChooseMove(foe,me);
+  const meFirst = me.stats.spe===foe.stats.spe ? Math.random()<.5 : me.stats.spe>foe.stats.spe;
+  const order = meFirst ? [[me,foe,mv,false],[foe,me,fm,true]] : [[foe,me,fm,true],[me,foe,mv,false]];
+  for (const [a,d,m,defIsPlayer] of order){
+    if (a.hp<=0) continue;
+    strike(a,d,m,defIsPlayer,events);
+    renderStage(); renderActions();
+    await sleep(620);
+    if (foe.hp<=0){ await foeDefeated(events); lockUI(false); return; }
+    if (me.hp<=0){ await playerFaint(events); lockUI(false); return; }
+  }
+  await save(); renderAll(); lockUI(false);
+}
+async function doSwitch(i){
+  if (busy||!G.battle||G.party[i].hp<=0||i===G.activeIdx) return;
+  lockUI(true);
+  const events=[]; const free=G.battle.mustSwitch;
+  G.activeIdx=i; G.battle.mustSwitch=false;
+  taleEngine(`Go, ${active().name}!`);
+  await save(); renderAll();
+  if (!free){
+    await sleep(420);
+    strike(G.battle.foe, active(), enemyChooseMove(G.battle.foe, active()), true, events);
+    renderStage(); await sleep(500);
+    if (active().hp<=0){ await playerFaint(events); lockUI(false); return; }
+  }
+  await save(); renderAll(); lockUI(false);
+}
+async function doCatch(ball){
+  if (busy||!G.battle||G.battle.kind!=="wild"||G.battle.mustSwitch) return;
+  lockUI(true);
+  const events=[];
+  G.trainer.balls[ball]--;
+  const foe=G.battle.foe;
+  const M=foe.stats.maxhp, H=Math.max(1,foe.hp);
+  const a=((3*M-2*H)*(foe.captureRate??45)*BALL_MULT[ball])/(3*M);
+  const p=Math.min(1,a/255);
+  taleEngine(`Threw a ${ball}… (odds ${(p*100).toFixed(0)}%)`);
+  await sleep(700);
+  if (Math.random()<p){
+    foe.hp=Math.max(1,foe.hp);
+    const dest = G.party.length<CONFIG.TEAM_MAX ? (G.party.push(foe),"joined the party") : (G.box.push(foe),"was sent to the box");
+    taleEngine(`Gotcha! ${foe.name} was caught and ${dest}.`, true);
+    G.journal.push(`[${G.location||"—"}] Caught ${foe.name} Lv.${foe.level}.`);
+    await endBattle(events, `Player CAUGHT the wild ${foe.name} (Lv.${foe.level}); it ${dest}.`);
+  } else {
+    taleEngine(`The ball shook… ${foe.name} broke free!`, true);
+    events.push(`catch failed on ${foe.name}`);
+    strike(foe, active(), enemyChooseMove(foe, active()), true, events);
+    renderStage(); await sleep(500);
+    if (active().hp<=0){ await playerFaint(events); lockUI(false); return; }
+    await save(); renderAll();
+  }
+  lockUI(false);
+}
+async function doRun(){
+  if (busy||!G.battle||G.battle.kind!=="wild"||G.battle.mustSwitch) return;
+  lockUI(true);
+  const events=[];
+  const me=active(), foe=G.battle.foe;
+  const p=Math.min(.95,Math.max(.25,.4+.4*(me.stats.spe/foe.stats.spe-.5)));
+  if (Math.random()<p){ taleEngine("Got away safely."); await endBattle(events,`Player FLED from the wild ${foe.name}.`); }
+  else {
+    taleEngine("Couldn't escape!", true);
+    strike(foe,me,enemyChooseMove(foe,me),true,events);
+    renderStage(); await sleep(500);
+    if (me.hp<=0){ await playerFaint(events); lockUI(false); return; }
+    await save(); renderAll();
+  }
+  lockUI(false);
+}
+async function doPotion(i){
+  if (busy||G.trainer.potions<=0) return;
+  const m=G.party[i];
+  if (!m||m.hp<=0||m.hp>=m.stats.maxhp) return;
+  G.trainer.potions--;
+  m.hp=Math.min(m.stats.maxhp,m.hp+CONFIG.POTION_HEAL);
+  taleEngine(`Used a potion on ${m.name} — ${m.hp}/${m.stats.maxhp}.`);
+  if (G.battle){
+    lockUI(true);
+    const events=[`used potion on ${m.name}`];
+    await sleep(420);
+    strike(G.battle.foe, active(), enemyChooseMove(G.battle.foe, active()), true, events);
+    renderStage(); await sleep(500);
+    if (active().hp<=0){ await playerFaint(events); lockUI(false); return; }
+    lockUI(false);
+  }
+  await save(); renderAll();
+}
+function doHeal(){
+  if (busy||G.battle) return;
+  G.party.forEach(m=>m.hp=m.stats.maxhp);
+  taleEngine("The whole party is fighting fit. (Pokémon Center)");
+  save(); renderAll();
+}
+function doBuy(item){
+  if (busy||G.battle) return;
+  if (G.trainer.money<MART[item]){ taleEngine(`That's ₽${MART[item]} — you have ₽${G.trainer.money}.`); return; }
+  G.trainer.money-=MART[item];
+  if (item==="potion") G.trainer.potions++; else G.trainer.balls[item]++;
+  taleEngine(`Bought 1 ${item} for ₽${MART[item]}.`);
+  save(); renderAll();
+}
+async function doTravel(loc){
+  if (busy||G.battle||!PACK.locations[loc]) return;
+  G.location=loc;
+  taleEngine(`Arrived: ${PACK.locations[loc].label}.`);
+  await save(); renderAll();
+  await gmBeat(`I traveled to ${loc}. Set the scene.`, [`arrived at ${loc}`]);
+}
+
+/* ---------------- input & flows ---------------- */
+
+async function sendSay(){
+  const inp=$("#say");
+  const text=inp.value.trim();
+  if (!text||busy||GM.busy) return;
+  inp.value="";
+  talePlayer(text);
+  await gmBeat(text, []);
+}
+async function pickStarter(i){
+  const mon=G.draft[i];
+  G.party=[mon]; G.activeIdx=0; G.draft=null;
+  G.journal.push(`Chose ${mon.name} as first partner.`);
+  await save(); renderAll();
+  taleEngine(`${mon.name} joined the party.`, true);
+  await gmBeat(`I chose ${mon.name} as my starter. Open the journey in Pallet Town: set the scene, give me a first hook, and use the travel directive to place me there.`, []);
+}
+async function newJourney(name){
+  G = freshGame(name);
+  G.draft = PACK.starters.map(s=>buildMon(s, CONFIG.START_LEVEL));
+  setAccent(); renderAll();
+  taleEngine(`Journey started for ${name}.`);
+  await save();
+}
+async function resumeJourney(){
+  setAccent(); renderAll();
+  G.counters.sessions++;
+  await save();
+  const due=conseqDue();
+  taleEngine(`Session ${G.counters.sessions}. Welcome back.`);
+  await gmBeat(`New session. Recap in two sentences where we stood, then continue.${due.length?" Consequences are due — open with them.":""}`, []);
+}
+
+/* ---------------- boot ---------------- */
+
+(async function boot(){
+  const saved = await load();
+  if (saved && G){ $("#resume").style.display="inline-block"; $("#tn").value = G.trainer?.name||""; }
+  G = saved ? G : null;
+  $("#begin").addEventListener("click", async ()=>{
+    const name=$("#tn").value.trim()||"Red";
+    $("#setup").style.display="none"; $("#app").style.visibility="visible";
+    await newJourney(name);
+  });
+  $("#resume").addEventListener("click", async ()=>{
+    if (!G){ return; }
+    $("#setup").style.display="none"; $("#app").style.visibility="visible";
+    await resumeJourney();
+  });
+  $("#say-btn").addEventListener("click", sendSay);
+  $("#say").addEventListener("keydown", e=>{ if(e.key==="Enter") sendSay(); });
+})();
+</script>
+</body>
+</html>
